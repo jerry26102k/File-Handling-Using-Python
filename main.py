@@ -5,9 +5,9 @@ from os import listdir
 from os.path import isfile, join
 import pymongo
 
-client = pymongo.MongoClient("mongodb://localhost:27017/")
-db = client["filesDb"]
-file_collection = db["files"]
+client = pymongo.MongoClient("mongodb://localhost:27017/")  # client is a reference for mongoDb server.
+db = client["filesDb"]  # creating database
+file_collection = db["files"]  # adding collection to the database
 
 parent_directory_path = os.getcwd()
 
@@ -48,15 +48,16 @@ while True:
         # getting list of files in processing folder.
         file_list = listdir(processing_path)
         for file in file_list:
-            shutil.move(processing_path + "/" + file, queue_path + "/" + file)
+            shutil.move(processing_path + "/" + file, queue_path + "/" + file)  # Processing -> Queue
 
     if any(isfile(join(queue_path, i)) for i in listdir(queue_path)):  # checking if any file exists in queue folder.
         file_to_move = os.listdir(queue_path)[0]  # transferring the very first file to processed folder.
         file_collection.update_one(
             {"fileName": file_to_move},
             {
-                "$set": {"isProcessed": 1}
-            }
+                "$set": {"isProcessed": 1}    # mongoDb query for updating isProcessed column if the file is moving to
+                                              # processed folder
+              }
         )
-        shutil.move(queue_path + '/' + file_to_move, processed_path + '/' + file_to_move)
+        shutil.move(queue_path + '/' + file_to_move, processed_path + '/' + file_to_move)  # Queue -> Processed
     i += 1
